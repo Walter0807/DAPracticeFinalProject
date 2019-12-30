@@ -1,0 +1,10 @@
+{
+    "python.pythonPath": "/usr/local/bin/python3",
+    "code-runner.executorMap": {
+        "cpp": "cd $dirWithoutTrailingSlash && clang++ -Wall \"$fileName\" -o \"./build/$fileNameWithoutExt\" -std=c++17 -lm && \"./build/$fileNameWithoutExt\"",
+    },
+    "files.associations": {
+        "ostream": "cpp"
+    }
+    
+}
