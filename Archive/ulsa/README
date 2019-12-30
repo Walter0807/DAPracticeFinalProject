@@ -1,0 +1,104 @@
+ULSA (Unweighted Local Search Algorithm)
+Christopher D. Rosin
+christopher.rosin@gmail.com
+September, 2014
+
+This is the ULSA code associated with the paper "Unweighted Stochastic
+Local Search can be Effective for Random CSP Benchmarks".  ULSA is an
+experimental solver for random binary constraint satisfaction problems (CSP).
+
+
+REQUIREMENTS:
+
+The C code has been tested under Linux (64-bit Ubuntu 14.04) running
+on an i7-4770 system.  The i7-4770 CPU supports AVX2 vector
+instructions, which the code uses via explicit AVX2 Intrinsics.  The
+code is likely to compile and run successfully on other CPUs that
+support AVX2 vector instructions.  It is unlikely to run successfully
+on CPUs that do not support AVX2.
+
+The code has been tested compiling with gcc 4.8.2.  It is likely to
+work with other versions of gcc as well (as long as they support AVX2
+Intrinsics).  It may or may not work with other compilers.
+
+
+COMPILING:
+
+The code was compiled with:
+gcc -std=gnu99 -mbmi -mavx2 -m64 -O3 -funroll-loops -o ulsa ulsa.c -lm
+
+
+INPUT:
+
+Though ULSA is a CSP solver, CSP instances are input as graphs.
+This is for compatibility with BHOSLIB:
+http://www.nlsde.buaa.edu.cn/~kexu/benchmarks/graph-benchmarks.htm
+While most of the BHOSLIB instances are available in native CSP
+formats, instance frb100-40 is only readily available as a graph.
+ULSA takes its input in the DIMACS graph format used by BHOSLIB.  Each
+CSP variable is assumed to have the same domain size.  Vertices
+corresponding to domain values for the first variable are numbered
+sequentially starting from 1, followed by vertices corresponding to
+domain values for the second variable, and so on.  An edge between two
+values of different variables indicates a constraint that forbids that
+pair of values.
+
+
+RUNNING:
+
+ULSA is configured using command line parameters:
+
+ulsa FILE SEED VARS DOMAIN ITER RUNS GAP GAPCHECK PRINTTHRESH
+
+  FILE is the DIMACS format file containing the input instance.
+
+  SEED is the initial random seed.
+
+  VARS is the number of variables.
+
+  DOMAIN is the number of values in the domain of each variable.
+
+  ITER is the maximum iterations in each run (successful runs may end sooner)
+
+  RUNS is the number of independently restarted runs to do
+
+  GAP sets a partial solution target of VARS-GAP (at most GAP conflicts).
+  Use GAP=0 to require perfect solutions.  Maximum supported GAP is 3.
+
+  GAPCHECK is the maximum number of conflicts in a state to be checked for GAP
+
+  PRINTTHRESH is the max conflicts at which to print new best-so-far states.
+
+
+EXAMPLES:
+
+ulsa frb59-26-2.mis 123 59 26 300000000000 100 0 0 -1 > log
+- This does 100 runs on frb59-26-2 starting from random seed 123, with
+  GAP=0 so that perfect solutions are required, and with ITER large
+  enough to reliably reach perfect solutions.  PRINTTHRESH=-1 so that
+  that partial solutions are not printed.
+
+ulsa frb100-40.mis 123 100 40 300000000000 1 3 8 -1 > log
+- This runs instance frb100-40 with GAP=3, so the target is
+  100-GAP=97.  Solutions with at most 8 conflicts are checked for
+  whether they meet this target.
+
+ulsa frb100-40.mis 123 100 40 3000000 1000000 0 0 2 > log
+- This runs frb100-40 many times for at most 3M iterations each run.
+  GAP=0 so it does not stop after reaching a partial solution.  In
+  each run, any new best-so-far (fewest-conflicts) solution found with
+  at most 2 conflicts is printed.
+
+
+OUTPUT:
+
+The output logs the iteration at which each best-so-far number of
+conflicts is first reached.  The end of a run reports "unsuccessful"
+if it ran out of iterations, or "success at I" if it succeeded at the
+I'th iteration.  If successful, or if PRINTTHRESH is met, a (partial)
+solution is printed on a line starting "sol".  This line shows the
+number of conflicts, and then the domain value for each variable is
+shown according to the vertex number for that domain value in the
+original input file.
+
+
